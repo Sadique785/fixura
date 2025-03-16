@@ -40,7 +40,9 @@ class LoginView(APIView):
     permission_classes = [AllowAny]  # Public API
 
     def post(self, request):
+        print('Entered login')
         serializer = LoginSerializer(data=request.data, context={'request': request})
+        print('step2', serializer)
         
         if serializer.is_valid():
             user = serializer.validated_data['user']
@@ -112,6 +114,7 @@ class LogoutView(APIView):
 
 
 class CustomTokenRefreshView(TokenRefreshView):
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
         refresh_token = request.headers.get('X-Refresh-Token') or request.COOKIES.get('refresh_token')
