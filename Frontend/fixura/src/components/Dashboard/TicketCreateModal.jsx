@@ -21,7 +21,7 @@ const TicketCreateModal = ({ isOpen, onClose, onTicketCreated }) => {
       setIsSubmitting(true);
       await axiosInstance.post("/tickets/create/", data);
       toast.success("Ticket created successfully!");
-      reset(); // Reset form
+      reset();
       onClose();
       onTicketCreated();
     } catch (error) {

@@ -1,9 +1,4 @@
-  import { useState } from 'react'
-  import reactLogo from './assets/react.svg'
-  import viteLogo from '/vite.svg'
   import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-  import LoginPage from "./pages/Login";
-  import RegisterPage from "./pages/Register"; // New
   import Dashboard from "./pages/Dashboard";
   import TicketDetail from "./pages/TicketDetail";
   import AdminPanel from "./pages/AdminPanel";
@@ -62,10 +57,6 @@
       <Router>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} /> 
-
-
           <Route 
           path="/dashboard" 
           element={

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import axiosInstance from "../../axios/axiosInstance";
+import toast from "react-hot-toast";
 
 
 const TicketEditModal = ({ isOpen, onClose, ticket, onTicketUpdate }) => {
@@ -34,9 +35,9 @@ const TicketEditModal = ({ isOpen, onClose, ticket, onTicketUpdate }) => {
       onTicketUpdate(response.data);
       
       onClose();
-      alert("Ticket updated successfully!");
+      toast.success("Ticket updated successfully!");
     } catch (error) {
-      console.error("Error updating ticket:", error);
+      toast.error("Error updating ticket:", error);
     }
   };
 

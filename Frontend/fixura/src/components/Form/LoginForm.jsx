@@ -27,7 +27,6 @@ const LoginForm = ({ onClose }) => {
     try {
       setIsSubmitting(true);
       const response = await loginUser(data.email, data.password);
-      console.log(response);
       
       if (response.success) {
 
@@ -40,7 +39,6 @@ const LoginForm = ({ onClose }) => {
         toast.error(response.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      console.error("Login error:", error);
       if (error.response?.status === 401) {
         setError("password", { type: "manual", message: "Invalid email or password" });
       } else {

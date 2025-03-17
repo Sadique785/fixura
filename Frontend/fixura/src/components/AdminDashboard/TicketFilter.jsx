@@ -15,7 +15,6 @@ const TicketFilter = ({ setFilters }) => {
 
   // Function to apply filters when button is clicked
   const applyFilters = () => {
-    console.log("Applying filters:", localFilters);
     setFilters(localFilters);
   };
 

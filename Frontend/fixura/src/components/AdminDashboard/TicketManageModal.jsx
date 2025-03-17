@@ -54,7 +54,6 @@ const TicketManageModal = ({ ticket, onClose, onTicketUpdated }) => {
       );
       setUserSuggestions(filteredUsers);
     } catch (error) {
-      console.error("Error searching users:", error);
       toast.error("Failed to search users");
       setUserSuggestions([]);
     } finally {
@@ -99,7 +98,6 @@ const TicketManageModal = ({ ticket, onClose, onTicketUpdated }) => {
       toast.success("Ticket updated successfully!");
       onClose();
     } catch (error) {
-      console.error("Error updating ticket:", error);
       toast.error("Failed to update ticket. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -126,7 +124,6 @@ const TicketManageModal = ({ ticket, onClose, onTicketUpdated }) => {
       toast.success("Ticket deleted successfully!");
       onClose();
     } catch (error) {
-      console.error("Error deleting ticket:", error);
   
       const errorMessage = error.response?.data?.detail || "Failed to delete ticket. Please try again.";
   

@@ -25,7 +25,6 @@ const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
         setOriginalTickets(allTickets);
         setTickets(allTickets); // Initially, filtered tickets is same as original
       } catch (error) {
-        console.error("Error fetching tickets:", error);
         // Set dummy data if API call fails
         const dummyData = [
           // Your dummy data here

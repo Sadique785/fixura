@@ -15,12 +15,10 @@ const TicketTable = ({ filters, setSelectedTicket, refreshTrigger }) => {
       try {
         setLoading(true);
         const response = await axiosInstance.get("tickets/admin/list/");
-        console.log(response)
         setTickets(response.data);
         setFilteredTickets(response.data);
         setError(null);
       } catch (error) {
-        console.error("Error fetching tickets:", error);
         setError("Failed to fetch tickets. Please try again later.");
       } finally {
         setLoading(false);

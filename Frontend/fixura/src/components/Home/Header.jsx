@@ -20,10 +20,8 @@ const Header = ({ setShowLogin, setShowRegister }) => {
       setIsSubmitting(true);
 
       const response = await axiosInstance.post('/logout/');
-      console.log(response)
       
       if (response.status === 200) {
-        console.log('success')
 
         dispatch(logout());
         
@@ -37,7 +35,6 @@ const Header = ({ setShowLogin, setShowRegister }) => {
 
       }
     } catch (error) {
-      console.error("Logout error:", error);
       toast.error("Something went wrong during logout");
       
       // Force logout on frontend even if backend fails

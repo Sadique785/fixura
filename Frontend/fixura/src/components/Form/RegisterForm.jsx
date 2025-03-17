@@ -36,13 +36,11 @@ const RegisterForm = ({ onClose }) => {
       const response = await axios.post(`${backendUrl}/register/`, formData);
       
       if (response.status === 201) { // Using strict equality
-        console.log('So registration successfull')
         const username = response.data?.user?.first_name || "User";
         toast.success(`Welcome, ${username}! Registration successful. Please login.`);
         onClose(); 
       }
     } catch (error) {
-      console.error("Registration error:", error);
       
       if (error.response?.data) {
         // Handle field-specific errors

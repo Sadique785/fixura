@@ -57,7 +57,6 @@ const handleSessionExpiredLogout = async () => {
     toast.error("Session expired. Please login again.");
     window.location.href = "/";
   } catch (error) {
-    console.error("Error during session expired logout:", error);
     window.location.href = "/";
   }
 };
