@@ -3,7 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from tickets.permissions import IsOwner
+from tickets.permissions import IsOwnerOrAdmin
 from rest_framework.exceptions import PermissionDenied
 from ..models import Ticket
 from ..choices import TicketStatus
@@ -128,20 +128,27 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
         return Ticket.objects.filter(user=self.request.user)
 
 
+# class AdminPanelView(generics.RetrieveUpdateAPIView):
+#     """View for admins to manage all tickets"""
+#     permission_classes = [IsAdminUser]  # Django's built-in permission that checks is_staff
+#     serializer_class = AdminTicketSerializer
+
+#     def get_queryset(self):
+#         # Return all tickets - only accessible to staff/superusers
+#         return Ticket.objects.all()
+    
+
 class AdminPanelView(generics.RetrieveUpdateAPIView):
     """View for admins to manage all tickets"""
     permission_classes = [IsAdminUser]  # Django's built-in permission that checks is_staff
     serializer_class = AdminTicketSerializer
+    queryset = Ticket.objects.all()
 
-    def get_queryset(self):
-        # Return all tickets - only accessible to staff/superusers
-        return Ticket.objects.all()
-    
 
     
 class DeleteTicketView(generics.DestroyAPIView):
     queryset = Ticket.objects.all()
-    permission_classes = [permissions.IsAuthenticated, IsOwner]
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
     def delete(self, request, *args, **kwargs):
         ticket = self.get_object()

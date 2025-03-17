@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from ..models import Ticket, TicketActivity
 from ..choices import TicketStatus, PriorityLevel, TicketType
+from authentication.models import User
 
 
 
@@ -107,8 +108,31 @@ class UserTicketSerializer(serializers.ModelSerializer):
         
 class AdminTicketSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source="user.email", read_only=True)
+    assigned_users = serializers.SerializerMethodField()  # ✅ Change to readable field
 
     class Meta:
         model = Ticket
-        fields = ['id', 'title', 'description', 'type', 'priority', 'status', 'user_email', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'description', 'type', 'priority', 'status', 
+                  'user_email', 'assigned_users', 'created_at', 'updated_at']
         read_only_fields = ['id', 'title', 'description', 'type', 'user_email', 'created_at', 'updated_at']
+
+    def get_assigned_users(self, obj):
+        """Retrieve assigned user emails for frontend"""
+        return [user.email for user in obj.assigned_users.all()]
+
+    def update(self, instance, validated_data):
+        # The key must match what the frontend is sending
+        assigned_users_emails = self.context['request'].data.get('assigned_users', [])
+
+        # Fetch user objects based on the provided emails
+        assigned_users = User.objects.filter(email__in=assigned_users_emails)
+
+        # Update the assigned users field
+        instance.assigned_users.set(assigned_users)  # ✅ Use `.set()` to replace existing values
+
+        # Handle other fields from validated_data
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance

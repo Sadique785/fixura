@@ -1,49 +1,80 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import TicketDescriptionModal from "./TicketDescriptionModal"; // Import new modal
+import axiosInstance from "../../axios/axiosInstance";
+import TicketDescriptionModal from "./TicketDescriptionModal";
 
+const TicketTable = ({ filters, setSelectedTicket, refreshTrigger }) => {
+  const [tickets, setTickets] = useState([]);
+  const [filteredTickets, setFilteredTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [clickedTicket, setClickedTicket] = useState(null);
+  const [shouldRefresh, setShouldRefresh] = useState(false);
 
-const TicketTable = ({ filters, setSelectedTicket }) => {
-  const [tickets, setTickets] = useState([
-    {
-      id: 1,
-      title: "Cannot access dashboard",
-      description:'Hey this description of id 1',
-      user_email: "jane.doe@example.com",
-      status: "in_progress",
-      priority: "high",
-    },
-    {
-      id: 2,
-      title: "Bug in payment gateway",
-      description:'Hey this description of id 2',
-      user_email: "john.smith@example.com",
-      status: "open",
-      priority: "medium",
-    },
-  ]);
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get("tickets/admin/list/");
+        console.log(response)
+        setTickets(response.data);
+        setFilteredTickets(response.data);
+        setError(null);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+        setError("Failed to fetch tickets. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTickets();
+  }, [shouldRefresh, refreshTrigger]); 
 
-  const [clickedTicket, setClickedTicket] = useState(null); 
+  useEffect(() => {
+    if (!filters || (!filters.status && !filters.priority && !filters.user)) {
+      setFilteredTickets(tickets);
+      return;
+    }
+  
+    const filtered = tickets.filter(ticket => {
+      const statusMatch = !filters.status || ticket.status === filters.status;
+      
+      const priorityMatch = !filters.priority || ticket.priority === filters.priority;
+      
+      const userMatch = !filters.user || 
+        ticket.user_email.toLowerCase().includes(filters.user.toLowerCase());
+      
+      return statusMatch && priorityMatch && userMatch;
+    });
+  
+    setFilteredTickets(filtered);
+  }, [filters, tickets]);
 
-
-  // Commented out backend call for now (Uncomment when API is ready)
-  // useEffect(() => {
-  //   const fetchTickets = async () => {
-  //     try {
-  //       let query = `?status=${filters.status}&priority=${filters.priority}&user=${filters.user}`;
-  //       const response = await axios.get(`http://127.0.0.1:8000/tickets/${query}`);
-  //       setTickets(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching tickets:", error);
-  //     }
-  //   };
-  //   fetchTickets();
-  // }, [filters]);
+  const handleRefresh = () => {
+    setShouldRefresh(prev => !prev);
+  };
 
   return (
     <div className="bg-gray-700 p-6 rounded-md shadow-md">
-      {tickets.length === 0 ? (
-        <p className="text-gray-300">No tickets found.</p>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-gray-200 text-xl">Tickets</h2>
+        <button 
+          onClick={handleRefresh}
+          className="bg-gray-600 hover:bg-gray-500 text-white p-2 rounded-md transition duration-200"
+          title="Refresh tickets"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+          </svg>
+        </button>
+      </div>
+      
+      {loading ? (
+        <p className="text-gray-300">Loading tickets...</p>
+      ) : error ? (
+        <p className="text-red-400">{error}</p>
+      ) : filteredTickets.length === 0 ? (
+        <p className="text-gray-300">No tickets found matching your criteria.</p>
       ) : (
         <table className="w-full border-collapse border border-gray-600">
           <thead>
@@ -56,7 +87,7 @@ const TicketTable = ({ filters, setSelectedTicket }) => {
             </tr>
           </thead>
           <tbody>
-            {tickets.map((ticket) => (
+            {filteredTickets.map((ticket) => (
               <tr key={ticket.id} className="text-center text-gray-100">
                 <td 
                   className="border border-gray-600 p-2 cursor-pointer hover:underline text-blue-300" 
@@ -108,9 +139,7 @@ const TicketTable = ({ filters, setSelectedTicket }) => {
         </table>
       )}
 
-            <TicketDescriptionModal ticket={clickedTicket} onClose={() => setClickedTicket(null)} />
-
-
+      <TicketDescriptionModal ticket={clickedTicket} onClose={() => setClickedTicket(null)} />
     </div>
   );
 };

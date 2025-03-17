@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from .serializers import UserRegistrationSerializer, LoginSerializer
+from .serializers import UserRegistrationSerializer, LoginSerializer, UserSearchSerializer
 from ..models import User
 from django.middleware import csrf
 from .utils import generate_tokens
@@ -11,6 +11,9 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import logout
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenRefreshView
+from django.db.models import Q
+
+
 
 
 class RegisterView(APIView):
@@ -156,6 +159,23 @@ class CustomTokenRefreshView(TokenRefreshView):
         except Exception:
             return Response({"error": "Invalid refresh token"}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+
+class SearchUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get('query', "").strip()
         
+        if not query or len(query) < 1:
+            return Response({"error": "Search term must be at least 1 characters long"}, status=400)
+        
+        users = User.objects.filter(
+            Q(email__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query)
+        )[:5]
+
+        serializer = UserSearchSerializer(users, many=True)
+        return Response(serializer.data)
+
 
 
