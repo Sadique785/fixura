@@ -1,50 +1,75 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { FaEdit, FaUserCircle, FaComment } from "react-icons/fa";
+import { useParams, useNavigate } from "react-router-dom";
+import { FaEdit, FaUserCircle, FaComment, FaHistory, FaTrash } from "react-icons/fa";
 import Header from "../components/Home/Header";
 import Footer from "../components/Home/Footer";
 import TicketEditModal from "../components/Dashboard/TicketEditModal";
 import { gradients } from "../styles/gradient";
+import axiosInstance from "../axios/axiosInstance";
+import DeleteConfirmationModal from "../components/Dashboard/DeleteConfirmationModal";
+
+
+
 
 const TicketDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [ticket, setTicket] = useState(null);
 
-  // State for ticket data
-  const [ticket, setTicket] = useState({
-    id: id || "101",
-    title: "Login Issue - Cannot Reset Password",
-    status: "in_progress",
-    priority: "medium",
-    user_email: "john.doe@example.com",
-    created_at: "2025-03-14T10:00:00Z",
-    updated_at: "2025-03-15T12:30:00Z",
-    description: "I am unable to reset my password. Every time I try, it gives an 'Invalid Token' error.",
-  });
+  useEffect(() => {
+    const fetchTicketData = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get(`/tickets/${id}`);
+        console.log(response);
+        setTicket(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching ticket data:", err);
+        setError("Failed to load ticket data. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Single activity for simplicity
-  const [activity, setActivity] = useState({
-    type: "comment",
-    user: "support.agent@example.com",
-    timestamp: "2025-03-14T14:35:00Z",
-    content: "I'm looking into this issue. Could you please confirm which browser and device you're using when attempting the password reset?"
-  });
+    if (id) {
+      fetchTicketData();
+    }
+  }, [id]);
 
-  // Function to handle ticket updates
-  const handleTicketUpdate = (updatedTicket) => {
-    setTicket(prev => ({
-      ...prev,
-      ...updatedTicket,
-      updated_at: new Date().toISOString()
-    }));
+  const handleTicketUpdate = async (updatedTicket) => {
+    try {
+      // The API call is now handled in TicketEditModal
+      // Just update the state with the returned data
+      setTicket(updatedTicket);
+    } catch (err) {
+      console.error("Error updating ticket:", err);
+    }
+  };
 
-    // Update the activity to reflect the change
-    setActivity({
-      type: "update",
-      user: "support.agent@example.com", // Would be the logged-in user in a real app
-      timestamp: new Date().toISOString(),
-      content: `updated the ticket (status: ${updatedTicket.status}, priority: ${updatedTicket.priority})`
-    });
+  const handleDeleteTicket = async () => {
+    try {
+      setIsDeleting(true);
+      const response = await axiosInstance.delete(`/tickets/delete/${id}/`);
+      
+      if (response.status === 200 || response.status === 204) {
+        navigate('/dashboard');
+      } else {
+        setError("Failed to delete ticket. Please try again later.");
+        setIsDeleting(false);
+      }
+    } catch (err) {
+      console.error("Error deleting ticket:", err);
+      setError("Failed to delete ticket. Please try again later.");
+      setIsDeleting(false);
+    } finally {
+      setShowDeleteModal(false);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -56,6 +81,52 @@ const TicketDetail = () => {
       default: return "bg-[#8b949e]";
     }
   };
+
+  // Function to determine icon for activity type
+  const getActivityIcon = (action) => {
+    if (action.toLowerCase().includes("created")) {
+      return <FaHistory className="text-white text-sm" />;
+    } else if (action.toLowerCase().includes("updated") || action.toLowerCase().includes("changed")) {
+      return <FaEdit className="text-white text-sm" />;
+    } else {
+      return <FaComment className="text-white text-sm" />;
+    }
+  };
+
+  // Function to determine background color for activity icon
+  const getActivityIconBg = (action) => {
+    if (action.toLowerCase().includes("created")) {
+      return "bg-[#238636]";
+    } else if (action.toLowerCase().includes("updated") || action.toLowerCase().includes("changed")) {
+      return "bg-[#388bfd]";
+    } else {
+      return "bg-[#6e7681]";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen text-[#c9d1d9]" style={{ background: gradients.mainGradient }}>
+        <Header isLogged={true} />
+        <main className="flex-grow p-6 flex items-center justify-center">
+          <div className="text-xl">Loading ticket information...</div>
+        </main>
+        <Footer className="bg-[#161b22] bg-opacity-70 border-t border-[#30363d]" />
+      </div>
+    );
+  }
+
+  if (error || !ticket) {
+    return (
+      <div className="flex flex-col min-h-screen text-[#c9d1d9]" style={{ background: gradients.mainGradient }}>
+        <Header isLogged={true} />
+        <main className="flex-grow p-6 flex items-center justify-center">
+          <div className="text-xl text-red-500">{error || "Ticket not found"}</div>
+        </main>
+        <Footer className="bg-[#161b22] bg-opacity-70 border-t border-[#30363d]" />
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -74,12 +145,22 @@ const TicketDetail = () => {
               <h1 className="text-3xl font-bold text-white">
                 {ticket.title} <span className="text-[#8b949e] text-2xl">#{ticket.id}</span>
               </h1>
+              <div className="flex gap-2">
               <button 
-                className="bg-[#238636] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#2ea043] transition-colors"
-                onClick={() => setShowEditModal(true)}
+                className="bg-[#f85149] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#ff6b63] transition-colors"
+                onClick={() => setShowDeleteModal(true)}
               >
-                <FaEdit /> Edit
+                <FaTrash /> Delete
               </button>
+
+
+                <button 
+                  className="bg-[#238636] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#2ea043] transition-colors"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  <FaEdit /> Edit
+                </button>
+              </div>
             </div>
 
             {/* Status & Priority Badges */}
@@ -92,6 +173,11 @@ const TicketDetail = () => {
                   ticket.priority === "medium" ? "bg-[#db6d28]" : "bg-[#8b949e]"}`}>
                 PRIORITY: {ticket.priority.toUpperCase()}
               </div>
+              {ticket.type && (
+                <div className="inline-block px-4 py-1 text-white rounded-md text-sm font-medium bg-[#6e40c9]">
+                  TYPE: {ticket.type.toUpperCase()}
+                </div>
+              )}
             </div>
 
             {/* Separator */}
@@ -102,7 +188,15 @@ const TicketDetail = () => {
               <FaUserCircle className="text-[#8b949e] text-5xl" />
               <div className="border border-[#30363d] p-4 rounded-md flex-1 bg-[#0d1117] bg-opacity-60">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-white">{ticket.user_email}</span>
+                  <div>
+                    <span className="font-bold text-white">{ticket.username}</span>
+                    <span className="text-sm text-[#8b949e] ml-2">({ticket.user_email})</span>
+                  </div>
+                  <span className="text-sm text-[#8b949e]">
+                    Created: {new Date(ticket.created_at).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-2">
                   <span className="text-sm text-[#8b949e]">
                     Last updated: {new Date(ticket.updated_at).toLocaleString()}
                   </span>
@@ -112,48 +206,57 @@ const TicketDetail = () => {
             </div>
           </div>
 
-          {/* Activity Section - Simplified to just one activity */}
+          {/* Activity Section - Now displays activities from ticket data */}
           <div className="bg-[#161b22] bg-opacity-70 border border-[#30363d] rounded-md p-6 shadow">
-            <h3 className="text-lg font-semibold mb-4 text-white">Latest Activity</h3>
+            <h3 className="text-lg font-semibold mb-4 text-white">Activity History</h3>
             
-            <div className="flex items-start gap-3">
-              {/* Activity Icon */}
-              <div className="mt-1">
-                <span className={`p-1 rounded-full ${activity.type === "update" ? "bg-[#388bfd]" : "bg-[#6e7681]"}`}>
-                  {activity.type === "update" ? 
-                    <FaEdit className="text-white text-sm" /> : 
-                    <FaComment className="text-white text-sm" />}
-                </span>
-              </div>
-              
-              {/* Activity Content */}
-              <div className="flex-1">
-                <div className="flex flex-wrap gap-x-2 text-sm">
-                  <span className="font-medium text-white">{activity.user}</span>
-                  <span className="text-[#8b949e]">{activity.content}</span>
-                  <span className="text-[#8b949e]">{new Date(activity.timestamp).toLocaleString()}</span>
-                </div>
-                
-                {activity.type === "comment" && (
-                  <div className="mt-2 p-3 border border-[#30363d] rounded-md bg-[#0d1117] bg-opacity-60 text-[#c9d1d9]">
-                    {activity.content}
+            {ticket.activities && ticket.activities.length > 0 ? (
+              <div className="space-y-4">
+                {ticket.activities.map((activity, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    {/* Activity Icon */}
+                    <div className="mt-1">
+                      <span className={`p-1 rounded-full ${getActivityIconBg(activity.action)}`}>
+                        {getActivityIcon(activity.action)}
+                      </span>
+                    </div>
+                    
+                    {/* Activity Content */}
+                    <div className="flex-1">
+                      <div className="flex flex-wrap gap-x-2 text-sm">
+                        <span className="font-medium text-white">{activity.user}</span>
+                        <span className="text-[#8b949e]">{activity.action}</span>
+                        <span className="text-[#8b949e]">{activity.timestamp}</span>
+                      </div>
+                    </div>
                   </div>
-                )}
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="text-[#8b949e] italic">No activity recorded yet.</div>
+            )}
           </div>
         </div>
       </main>
 
       <Footer className="bg-[#161b22] bg-opacity-70 border-t border-[#30363d]" />
 
+      <DeleteConfirmationModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={handleDeleteTicket}
+                isDeleting={isDeleting}
+              />
+
       {/* Edit Modal */}
-      <TicketEditModal 
-        isOpen={showEditModal} 
-        onClose={() => setShowEditModal(false)} 
-        ticket={ticket}
-        onTicketUpdate={handleTicketUpdate}
-      />
+      {ticket && (
+        <TicketEditModal 
+          isOpen={showEditModal} 
+          onClose={() => setShowEditModal(false)} 
+          ticket={ticket}
+          onTicketUpdate={handleTicketUpdate}
+        />
+      )}
     </div>
   );
 };

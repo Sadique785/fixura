@@ -46,6 +46,7 @@ class LoginView(APIView):
         
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            print('user', user)
             tokens = generate_tokens(user)  # Generate JWT tokens
             csrf_token = csrf.get_token(request)
 
@@ -58,9 +59,12 @@ class LoginView(APIView):
                     "email": user.email,
                     "first_name": user.first_name,
                     "last_name": user.last_name,
-                    "mobile": user.mobile
+                    "mobile": user.mobile,
+                    "isAdmin":user.is_superuser,
                 }
+                
             }
+            print(response_data)
 
             response = Response(response_data)
 

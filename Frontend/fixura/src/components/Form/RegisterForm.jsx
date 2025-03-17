@@ -1,4 +1,6 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { toast } from "react-hot-toast"; 
 import { useForm } from "react-hook-form";
@@ -7,6 +9,14 @@ import { useForm } from "react-hook-form";
 const RegisterForm = ({ onClose }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
 
   const onSubmit = async (data) => {
     try {

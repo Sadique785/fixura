@@ -1,50 +1,67 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom'
-import axios from "axios";
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from "../../axios/axiosInstance";
 
-const TicketList = ({ filters }) => {
-  const navigate = useNavigate()
-  const [tickets, setTickets] = useState([
-    {
-      id: 1,
-      title: "Login authentication not working",
-      status: "open",
-      priority: "high",
-      created_at: "2025-03-10T09:45:21Z",
-      user: {
-        name: "John Smith",
-        email: "john.smith@example.com"
-      }
-    },
-    {
-      id: 2,
-      title: "Dashboard UI elements not loading correctly",
-      status: "in_progress",
-      priority: "medium",
-      created_at: "2025-03-14T16:30:00Z",
-      user: {
-        name: "Sarah Johnson",
-        email: "sarah.j@example.com"
-      }
-    }
-  ]);
+const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
+  const navigate = useNavigate();
+  const [originalTickets, setOriginalTickets] = useState([]);
+
+
+
 
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        let query = `?status=${filters.status}&priority=${filters.priority}`;
-        const response = await axios.get(`http://127.0.0.1:8000/tickets/${query}`);
-        setTickets(response.data);
+        const response = await axiosInstance.get(`http://127.0.0.1:8000/tickets/list/`);
+        
+        // Initial dummy data
+        const initialData = [];
+        
+        let allTickets = initialData;
+        if (response.data && Array.isArray(response.data)) {
+          allTickets = [...initialData, ...response.data];
+        }
+        
+        setOriginalTickets(allTickets);
+        setTickets(allTickets); // Initially, filtered tickets is same as original
       } catch (error) {
         console.error("Error fetching tickets:", error);
+        // Set dummy data if API call fails
+        const dummyData = [
+          // Your dummy data here
+        ];
+        setOriginalTickets(dummyData);
+        setTickets(dummyData);
       }
     };
 
-    // Comment out the API call for now to display dummy data
-    // fetchTickets();
-  }, [filters]);
+    fetchTickets();
+  }, [shouldRefresh]);
 
-  // Function to determine the status icon and color
+  useEffect(() => {
+
+    
+    if (!filters || (!filters.status && !filters.priority)) {
+      setTickets(originalTickets);
+      return;
+    }
+  
+    // Filter the tickets based on the provided filters
+    const filteredTickets = originalTickets.filter(ticket => {
+      // Check if ticket matches status filter
+      const statusMatch = !filters.status || ticket.status === filters.status;
+      // Check if ticket matches priority filter
+      const priorityMatch = !filters.priority || ticket.priority === filters.priority;
+
+      
+      // Return true if both conditions are met
+      return statusMatch && priorityMatch;
+    });
+  
+    setTickets(filteredTickets);
+  }, [filters, originalTickets]);
+
+
   const getStatusIcon = (status) => {
     switch (status) {
       case "open":
@@ -66,6 +83,15 @@ const TicketList = ({ filters }) => {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
+  // Function to extract username from email
+  const getUserNameFromEmail = (email) => {
+    if (!email) return "Unknown User";
+    return email.split('@')[0].replace('.', ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+
   return (
     <div className="divide-y divide-[#30363d]">
       {tickets.length === 0 ? (
@@ -83,16 +109,21 @@ const TicketList = ({ filters }) => {
                 <div>
                   <div className="flex items-center">
                     <h3 
-                    onClick={() => navigate(`/ticket/${ticket.id}`)}
-                    className="font-medium text-white cursor-pointer">
+                      onClick={() => navigate(`/ticket/${ticket.id}`)}
+                      className="font-medium text-white cursor-pointer hover:text-[#58a6ff]">
                       {ticket.title}
                     </h3>
                     <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-opacity-20 bg-[#58a6ff] text-[#58a6ff]">
                       {ticket.priority}
                     </span>
+                    {ticket.type && (
+                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-opacity-20 bg-[#f78166] text-[#f78166]">
+                        {ticket.type}
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-[#8b949e] mt-1">
-                    #{ticket.id} opened by {ticket.user.name} • {ticket.user.email}
+                    #{ticket.id} opened by {getUserNameFromEmail(ticket.user_email)} • {ticket.user_email}
                   </div>
                 </div>
               </div>

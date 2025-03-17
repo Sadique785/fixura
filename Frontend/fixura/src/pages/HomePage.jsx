@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
 import Header from '../components/Home/Header';
 import HomeMid from '../components/Home/HomeMid';
 import Footer from '../components/Home/Footer';
@@ -7,8 +8,13 @@ import LoginForm from "../components/Form/LoginForm";
 import RegisterForm from "../components/Form/RegisterForm";
 
 function HomePage() {
+
+
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+
+
+
 
   // Custom styles for different modals
   const registerModalStyle = {

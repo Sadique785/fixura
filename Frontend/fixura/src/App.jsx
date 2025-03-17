@@ -10,6 +10,7 @@
   import NotFound from "./pages/NotFound";
   import HomePage from './pages/HomePage';
   import { Toaster } from 'react-hot-toast';
+  import ProtectedRoute from './protected/ProtectedRoute';
 
 
 
@@ -63,9 +64,35 @@
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} /> 
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/ticket/:id" element={<TicketDetail />} />
-          <Route path="/admin" element={<AdminPanel />} />
+
+
+          <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+        path="/ticket/:id"
+        element={
+          <ProtectedRoute>
+                <TicketDetail />
+          </ProtectedRoute>
+
+        }
+        />
+
+      <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute role="admin">
+              <AdminPanel />
+            </ProtectedRoute>
+          } 
+        />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>

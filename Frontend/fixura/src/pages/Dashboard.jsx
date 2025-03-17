@@ -9,6 +9,17 @@ import { gradients } from "../styles/gradient";
 const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [filters, setFilters] = useState({ status: "", priority: "" });
+  const [tickets, setTickets] = useState([]);
+  const [shouldRefresh, setShouldRefresh] = useState(false); 
+
+
+  const handleTicketCreated = () => {
+
+    setFilters({ status: "", priority: "" });
+
+    setShouldRefresh(prev => !prev);
+  };
+
 
   return (
     <div 
@@ -17,7 +28,7 @@ const Dashboard = () => {
         background: gradients.mainGradient
       }}
     >
-      <Header isLogged={true} />
+      <Header />
 
       {/* Main Dashboard Section */}
       <main className="flex-grow p-6">
@@ -39,11 +50,11 @@ const Dashboard = () => {
 
           {/* Ticket List */}
           <div className="bg-[#161b22] bg-opacity-70 border border-[#30363d] rounded-md shadow">
-            <TicketList filters={filters} />
+            <TicketList tickets={tickets} setTickets={setTickets} filters={filters} shouldRefresh={shouldRefresh}  />
           </div>
 
           {/* Create Ticket Modal */}
-          <TicketCreateModal isOpen={showModal} onClose={() => setShowModal(false)} />
+          <TicketCreateModal isOpen={showModal} onClose={() => setShowModal(false)} onTicketCreated={handleTicketCreated}/>
         </div>
       </main>
 

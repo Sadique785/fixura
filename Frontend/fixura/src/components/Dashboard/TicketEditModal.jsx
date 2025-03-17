@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useForm } from "react-hook-form";
+import axiosInstance from "../../axios/axiosInstance";
+
 
 const TicketEditModal = ({ isOpen, onClose, ticket, onTicketUpdate }) => {
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm({
@@ -27,13 +28,10 @@ const TicketEditModal = ({ isOpen, onClose, ticket, onTicketUpdate }) => {
   const onSubmit = async (data) => {
     try {
       // Make PUT request to update the ticket
-      const response = await axios.put(`http://127.0.0.1:8000/tickets/${ticket.id}/`, data);
+      const response = await axiosInstance.put(`/tickets/${ticket.id}/`, data);
       
-      // Update the UI with new ticket data
-      onTicketUpdate({
-        ...response.data,
-        user_email: data.user // Ensure user_email is updated correctly
-      });
+      // Pass the complete response data to the parent component
+      onTicketUpdate(response.data);
       
       onClose();
       alert("Ticket updated successfully!");
@@ -89,19 +87,22 @@ const TicketEditModal = ({ isOpen, onClose, ticket, onTicketUpdate }) => {
           <div>
             <label className="block text-sm mb-1">Status</label>
             <select
-              className="bg-[#0d1117] border border-[#30363d] p-2 w-full rounded-md text-[#c9d1d9] focus:border-[#58a6ff] focus:outline-none"
+              className="bg-[#0d1117] border border-[#30363d] p-2 w-full rounded-md text-[#c9d1d9] focus:border-[#58a6ff] focus:outline-none opacity-70 cursor-not-allowed"
               {...register("status")}
+              disabled
             >
               <option value="open">Open</option>
               <option value="in_progress">In Progress</option>
               <option value="resolved">Resolved</option>
               <option value="closed">Closed</option>
             </select>
+            <p className="text-xs text-[#8b949e] mt-1 italic">Status can only be updated by admin</p>
           </div>
           
           <div>
             <input
               type="text"
+              readOnly={true}
               placeholder="User Email"
               className="bg-[#0d1117] border border-[#30363d] p-2 w-full rounded-md text-[#c9d1d9] focus:border-[#58a6ff] focus:outline-none"
               {...register("user", { 
