@@ -38,15 +38,24 @@ AUTH_USER_MODEL = 'authentication.User'
 
 # ALLOWED_HOSTS = ['65.2.80.114', 'fixura.devque.live', 'localhost', 'fixura.vercel.app']
 
+# ALLOWED_HOSTS = [
+#     "65.2.80.114",  
+#     "fixura.devque.live",  
+#     "devque.live",
+#     "localhost",  
+#     "fixura.vercel.app",
+#     ".fixura.devque.live", 
+#     ".fixura.vercel.app",  
+# ]
+
 ALLOWED_HOSTS = [
-    "65.2.80.114",  
-    "fixura.devque.live",  
+    "65.2.80.114",
+    "fixura.devque.live",
     "devque.live",
-    "localhost",  
-    "fixura.vercel.app",
-    ".fixura.devque.live", 
-    ".fixura.vercel.app",  
+    "localhost",
+    "fixura.vercel.app"
 ]
+
 
 # Application definition
 
@@ -125,21 +134,23 @@ SIMPLE_JWT = {
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  
+    "http://localhost:5173",
     "https://fixura.devque.live",
     "https://fixura.vercel.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-     "http://localhost:5173",
+    "http://localhost:5173",
     "https://fixura.devque.live",
     "https://fixura.vercel.app"
 ]
 
+CORS_ALLOW_CREDENTIALS = True 
+
+
 CORS_ORIGIN_WHITELIST = CORS_ALLOWED_ORIGINS 
 
 
-CORS_ALLOW_CREDENTIALS = True 
 
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
