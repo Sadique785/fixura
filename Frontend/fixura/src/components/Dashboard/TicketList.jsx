@@ -12,7 +12,7 @@ const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const response = await axiosInstance.get(`http://127.0.0.1:8000/tickets/list/`);
+        const response = await axiosInstance.get(`/tickets/list/`);
         
         // Initial dummy data
         const initialData = [];
