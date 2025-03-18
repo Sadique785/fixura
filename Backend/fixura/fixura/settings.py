@@ -31,12 +31,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-d2c8zd4zrg%iewc2hrz73#2$t6#_#b9rtc9^5my3vx1&=a6_1n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 AUTH_USER_MODEL = 'authentication.User'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['65.2.80.114', 'fixura.devque.live', 'localhost']
 
 
 # Application definition
@@ -117,6 +117,7 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  
+    "https://fixura.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True 
@@ -195,6 +196,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
