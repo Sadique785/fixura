@@ -41,7 +41,7 @@ AUTH_USER_MODEL = 'authentication.User'
 ALLOWED_HOSTS = [
     "65.2.80.114",  
     "fixura.devque.live",  
-    "devque.live"
+    "devque.live",
     "localhost",  
     "fixura.vercel.app",
     ".fixura.devque.live", 
