@@ -31,13 +31,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-d2c8zd4zrg%iewc2hrz73#2$t6#_#b9rtc9^5my3vx1&=a6_1n'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 
 AUTH_USER_MODEL = 'authentication.User'
 
-ALLOWED_HOSTS = ['65.2.80.114', 'fixura.devque.live', 'localhost']
+# ALLOWED_HOSTS = ['65.2.80.114', 'fixura.devque.live', 'localhost', 'fixura.vercel.app']
 
+ALLOWED_HOSTS = [
+    "65.2.80.114",  
+    "fixura.devque.live",  
+    "devque.live"
+    "localhost",  
+    "fixura.vercel.app",
+    ".fixura.devque.live", 
+    ".fixura.vercel.app",  
+]
 
 # Application definition
 
@@ -117,8 +126,18 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  
+    "https://fixura.devque.live",
     "https://fixura.vercel.app",
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+     "http://localhost:5173",
+    "https://fixura.devque.live",
+    "https://fixura.vercel.app"
+]
+
+CORS_ORIGIN_WHITELIST = CORS_ALLOWED_ORIGINS 
+
 
 CORS_ALLOW_CREDENTIALS = True 
 
