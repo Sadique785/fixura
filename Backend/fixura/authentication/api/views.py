@@ -16,11 +16,14 @@ from django.db.models import Q
 
 
 
+    
 class RegisterView(APIView):
-    permission_classes = [AllowAny]
+    """Handles user registration. Allows new users to sign up."""
 
+    permission_classes = [AllowAny]  
 
     def post(self, request):
+        """Registers a new user and returns their details if successful."""
         serializer = UserRegistrationSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -37,12 +40,15 @@ class RegisterView(APIView):
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
 class LoginView(APIView):
-    permission_classes = [AllowAny]  # Public API
+    """Handles user login and token generation."""
+
+    permission_classes = [AllowAny]  
 
     def post(self, request):
+        """Handles user login and token generation."""
+
         print('Entered login')
         serializer = LoginSerializer(data=request.data, context={'request': request})
         print('step2', serializer)
@@ -50,7 +56,7 @@ class LoginView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data['user']
             print('user', user)
-            tokens = generate_tokens(user)  # Generate JWT tokens
+            tokens = generate_tokens(user)  
             csrf_token = csrf.get_token(request)
 
             response_data = {
@@ -70,6 +76,8 @@ class LoginView(APIView):
             print(response_data)
 
             response = Response(response_data)
+
+
 
             # Set CSRF token in a cookie
             response.set_cookie(
@@ -94,9 +102,14 @@ class LoginView(APIView):
         return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
     
 class LogoutView(APIView):
+    """Handles user logout by blacklisting the refresh token and clearing cookies."""
+
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        """Logs out the user by invalidating the refresh token and clearing authentication cookies."""
+
         try:
             refresh_token = request.COOKIES.get('refresh_token')
             if refresh_token:
@@ -121,9 +134,13 @@ class LogoutView(APIView):
 
 
 class CustomTokenRefreshView(TokenRefreshView):
+    """Handles refreshing access tokens and setting a new refresh token in cookies."""
+
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
+        """Validates the refresh token, issues a new access token, and updates the refresh token cookie."""
+
         refresh_token = request.headers.get('X-Refresh-Token') or request.COOKIES.get('refresh_token')
 
         if not refresh_token:
@@ -162,9 +179,14 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class SearchUsersView(APIView):
+    """Allows authenticated users to search for other users by email, first name, or last name."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        
+        """Performs a user search based on the query parameter and returns matching results."""
+
         query = request.query_params.get('query', "").strip()
         
         if not query or len(query) < 1:

@@ -10,8 +10,11 @@ from ..choices import TicketStatus
 from .serializers import CreateTicketSerializer, TicketSerializer, UserTicketSerializer, AdminTicketSerializer
 
 
-
 class CreateTicketView(APIView):
+    """
+    API view for creating new tickets in the system.
+    This view handles POST requests to create tickets from authenticated users.
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -27,35 +30,12 @@ class CreateTicketView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
-class ListTicketsView(generics.ListAPIView):
 
-    serializer_class = TicketSerializer
-    permission_classes = [IsAuthenticated]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['status', 'priority', 'user']
-
-
-
-    def get_queryset(self):
-        user = self.request.user
-        queryset = Ticket.objects.all() if user.is_staff or user.is_superuser else Ticket.objects.filter(user=user)
-        
-        status = self.request.query_params.get('status', None)
-        priority = self.request.query_params.get('priority', None)
-        user_filter = self.request.query_params.get('user', None)
-
-        if status:
-            queryset = queryset.filter(status=status)
-        if priority:
-            queryset = queryset.filter(priority=priority)
-        if user_filter and user.is_staff:
-            queryset = queryset.filter(user=user_filter)
-
-        return queryset
 
 # List views
 class UserTicketListView(generics.ListAPIView):
     """View for users (including admins) to list their own tickets"""
+
     serializer_class = UserTicketSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
@@ -64,89 +44,50 @@ class UserTicketListView(generics.ListAPIView):
     def get_queryset(self):
         # Always filter by the current user, even if they're admin/staff
         queryset = Ticket.objects.filter(user=self.request.user)
-        
-        status = self.request.query_params.get('status', None)
-        priority = self.request.query_params.get('priority', None)
-        
-        if status:
-            queryset = queryset.filter(status=status)
-        if priority:
-            queryset = queryset.filter(priority=priority)
+
             
         return queryset
 
 
 class AdminTicketListView(generics.ListAPIView):
+
     """View for admins to list all tickets"""
+
     serializer_class = AdminTicketSerializer
     permission_classes = [IsAdminUser]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['status', 'priority', 'user']
 
     def get_queryset(self):
-        # Return all tickets - only accessible to staff/superusers
         queryset = Ticket.objects.all()
-        
-        status = self.request.query_params.get('status', None)
-        priority = self.request.query_params.get('priority', None)
-        user_filter = self.request.query_params.get('user', None)
-        
-        if status:
-            queryset = queryset.filter(status=status)
-        if priority:
-            queryset = queryset.filter(priority=priority)
-        if user_filter:
-            queryset = queryset.filter(user=user_filter)
-            
         return queryset
 
-class RetrieveUpdateView(generics.RetrieveUpdateAPIView):
 
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            return Ticket.objects.all()
-        return Ticket.objects.filter(user=user)
-
-
-    def get_serializer_class(self):
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            return AdminTicketSerializer
-        return UserTicketSerializer
     
-# Views
 class UserDetailView(generics.RetrieveUpdateAPIView):
     """View for users (including admins) to manage their own tickets"""
     permission_classes = [IsAuthenticated]
     serializer_class = UserTicketSerializer
 
     def get_queryset(self):
-        # Always filter by the current user, even if they're admin/staff
         return Ticket.objects.filter(user=self.request.user)
 
 
-# class AdminPanelView(generics.RetrieveUpdateAPIView):
-#     """View for admins to manage all tickets"""
-#     permission_classes = [IsAdminUser]  # Django's built-in permission that checks is_staff
-#     serializer_class = AdminTicketSerializer
 
-#     def get_queryset(self):
-#         # Return all tickets - only accessible to staff/superusers
-#         return Ticket.objects.all()
-    
 
 class AdminPanelView(generics.RetrieveUpdateAPIView):
     """View for admins to manage all tickets"""
-    permission_classes = [IsAdminUser]  # Django's built-in permission that checks is_staff
+    permission_classes = [IsAdminUser]  
     serializer_class = AdminTicketSerializer
     queryset = Ticket.objects.all()
 
 
     
 class DeleteTicketView(generics.DestroyAPIView):
+    """
+    API view for deleting tickets.
+    Includes business logic restrictions on when tickets can be deleted.
+    """
     queryset = Ticket.objects.all()
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrAdmin]
 
