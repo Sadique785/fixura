@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../axios/axiosInstance";
+import TicketShimmer from "../Shimmers/TicketShimmer";
 import TicketDescriptionModal from "./TicketDescriptionModal";
 
 const TicketTable = ({ filters, setSelectedTicket, refreshTrigger }) => {
@@ -68,7 +69,7 @@ const TicketTable = ({ filters, setSelectedTicket, refreshTrigger }) => {
       </div>
       
       {loading ? (
-        <p className="text-gray-300">Loading tickets...</p>
+        <TicketShimmer />
       ) : error ? (
         <p className="text-red-400">{error}</p>
       ) : filteredTickets.length === 0 ? (

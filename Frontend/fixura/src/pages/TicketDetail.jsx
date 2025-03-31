@@ -3,9 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FaEdit, FaUserCircle, FaComment, FaHistory, FaTrash } from "react-icons/fa";
 import Header from "../components/Home/Header";
 import Footer from "../components/Home/Footer";
-import TicketEditModal from "../components/Dashboard/TicketEditModal";
 import { gradients } from "../styles/gradient";
 import axiosInstance from "../axios/axiosInstance";
+import TicketDetailShimmer from "../components/Shimmers/TicketDetailShimmer";
+import TicketEditModal from "../components/Dashboard/TicketEditModal";
 import DeleteConfirmationModal from "../components/Dashboard/DeleteConfirmationModal";
 
 
@@ -104,19 +105,10 @@ const TicketDetail = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col min-h-screen text-[#c9d1d9]" style={{ background: gradients.mainGradient }}>
-        <Header isLogged={true} />
-        <main className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-xl">Loading ticket information...</div>
-        </main>
-        <Footer className="bg-[#161b22] bg-opacity-70 border-t border-[#30363d]" />
-      </div>
-    );
-  }
 
-  if (error || !ticket) {
+  
+
+  if (error) {
     return (
       <div className="flex flex-col min-h-screen text-[#c9d1d9]" style={{ background: gradients.mainGradient }}>
         <Header isLogged={true} />
@@ -134,110 +126,117 @@ const TicketDetail = () => {
       style={{ background: gradients.mainGradient }}
     >
       <Header isLogged={true} />
-
-      {/* Main Content */}
-      <main className="flex-grow p-6">
-        <div className="container mx-auto max-w-4xl">
-          {/* Ticket Header */}
-          <div className="bg-[#161b22] bg-opacity-70 border border-[#30363d] rounded-md p-6 mb-6 shadow">
-            {/* Title and ID */}
-            <div className="flex justify-between items-center mb-4">
-              <h1 className="text-3xl font-bold text-white">
-                {ticket.title} <span className="text-[#8b949e] text-2xl">#{ticket.id}</span>
-              </h1>
-              <div className="flex gap-2">
-              <button 
-                className="bg-[#f85149] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#ff6b63] transition-colors"
-                onClick={() => setShowDeleteModal(true)}
-              >
-                <FaTrash /> Delete
-              </button>
-
-
-                <button 
-                  className="bg-[#238636] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#2ea043] transition-colors"
-                  onClick={() => setShowEditModal(true)}
-                >
-                  <FaEdit /> Edit
-                </button>
-              </div>
-            </div>
-
-            {/* Status & Priority Badges */}
-            <div className="flex gap-2 mb-4">
-              <div className={`inline-block px-4 py-1 text-white rounded-md text-sm font-medium ${getStatusColor(ticket.status)}`}>
-                {ticket.status.replace('_', ' ').toUpperCase()}
-              </div>
-              <div className={`inline-block px-4 py-1 text-white rounded-md text-sm font-medium
-                ${ticket.priority === "high" ? "bg-[#f85149]" : 
-                  ticket.priority === "medium" ? "bg-[#db6d28]" : "bg-[#8b949e]"}`}>
-                PRIORITY: {ticket.priority.toUpperCase()}
-              </div>
-              {ticket.type && (
-                <div className="inline-block px-4 py-1 text-white rounded-md text-sm font-medium bg-[#6e40c9]">
-                  TYPE: {ticket.type.toUpperCase()}
-                </div>
-              )}
-            </div>
-
-            {/* Separator */}
-            <hr className="border-t border-[#30363d] my-4" />
-
-            {/* User Info & Description */}
-            <div className="flex gap-4 items-start">
-              <FaUserCircle className="text-[#8b949e] text-5xl" />
-              <div className="border border-[#30363d] p-4 rounded-md flex-1 bg-[#0d1117] bg-opacity-60">
-                <div className="flex justify-between items-center mb-2">
-                  <div>
-                    <span className="font-bold text-white">{ticket.username}</span>
-                    <span className="text-sm text-[#8b949e] ml-2">({ticket.user_email})</span>
-                  </div>
-                  <span className="text-sm text-[#8b949e]">
-                    Created: {new Date(ticket.created_at).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-[#8b949e]">
-                    Last updated: {new Date(ticket.updated_at).toLocaleString()}
-                  </span>
-                </div>
-                <p className="text-[#c9d1d9]">{ticket.description}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Activity Section - Now displays activities from ticket data */}
-          <div className="bg-[#161b22] bg-opacity-70 border border-[#30363d] rounded-md p-6 shadow">
-            <h3 className="text-lg font-semibold mb-4 text-white">Activity History</h3>
-            
-            {ticket.activities && ticket.activities.length > 0 ? (
-              <div className="space-y-4">
-                {ticket.activities.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    {/* Activity Icon */}
-                    <div className="mt-1">
-                      <span className={`p-1 rounded-full ${getActivityIconBg(activity.action)}`}>
-                        {getActivityIcon(activity.action)}
-                      </span>
+      {loading ? (
+        <TicketDetailShimmer/>
+      )
+      
+      : (
+              <main className="flex-grow p-6">
+              <div className="container mx-auto max-w-4xl">
+                {/* Ticket Header */}
+                <div className="bg-[#161b22] bg-opacity-70 border border-[#30363d] rounded-md p-6 mb-6 shadow">
+                  {/* Title and ID */}
+                  <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-3xl font-bold text-white">
+                      {ticket.title} <span className="text-[#8b949e] text-2xl">#{ticket.id}</span>
+                    </h1>
+                    <div className="flex gap-2">
+                    <button 
+                      className="bg-[#f85149] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#ff6b63] transition-colors"
+                      onClick={() => setShowDeleteModal(true)}
+                    >
+                      <FaTrash /> Delete
+                    </button>
+      
+      
+                      <button 
+                        className="bg-[#238636] text-white px-4 py-2 rounded-md flex items-center gap-2 hover:bg-[#2ea043] transition-colors"
+                        onClick={() => setShowEditModal(true)}
+                      >
+                        <FaEdit /> Edit
+                      </button>
                     </div>
-                    
-                    {/* Activity Content */}
-                    <div className="flex-1">
-                      <div className="flex flex-wrap gap-x-2 text-sm">
-                        <span className="font-medium text-white">{activity.user}</span>
-                        <span className="text-[#8b949e]">{activity.action}</span>
-                        <span className="text-[#8b949e]">{activity.timestamp}</span>
+                  </div>
+      
+                  {/* Status & Priority Badges */}
+                  <div className="flex gap-2 mb-4">
+                    <div className={`inline-block px-4 py-1 text-white rounded-md text-sm font-medium ${getStatusColor(ticket.status)}`}>
+                      {ticket.status.replace('_', ' ').toUpperCase()}
+                    </div>
+                    <div className={`inline-block px-4 py-1 text-white rounded-md text-sm font-medium
+                      ${ticket.priority === "high" ? "bg-[#f85149]" : 
+                        ticket.priority === "medium" ? "bg-[#db6d28]" : "bg-[#8b949e]"}`}>
+                      PRIORITY: {ticket.priority.toUpperCase()}
+                    </div>
+                    {ticket.type && (
+                      <div className="inline-block px-4 py-1 text-white rounded-md text-sm font-medium bg-[#6e40c9]">
+                        TYPE: {ticket.type.toUpperCase()}
                       </div>
+                    )}
+                  </div>
+      
+                  {/* Separator */}
+                  <hr className="border-t border-[#30363d] my-4" />
+      
+                  {/* User Info & Description */}
+                  <div className="flex gap-4 items-start">
+                    <FaUserCircle className="text-[#8b949e] text-5xl" />
+                    <div className="border border-[#30363d] p-4 rounded-md flex-1 bg-[#0d1117] bg-opacity-60">
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <span className="font-bold text-white">{ticket.username}</span>
+                          <span className="text-sm text-[#8b949e] ml-2">({ticket.user_email})</span>
+                        </div>
+                        <span className="text-sm text-[#8b949e]">
+                          Created: {new Date(ticket.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm text-[#8b949e]">
+                          Last updated: {new Date(ticket.updated_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-[#c9d1d9]">{ticket.description}</p>
                     </div>
                   </div>
-                ))}
+                </div>
+      
+                {/* Activity Section - Now displays activities from ticket data */}
+                <div className="bg-[#161b22] bg-opacity-70 border border-[#30363d] rounded-md p-6 shadow">
+                  <h3 className="text-lg font-semibold mb-4 text-white">Activity History</h3>
+                  
+                  {ticket.activities && ticket.activities.length > 0 ? (
+                    <div className="space-y-4">
+                      {ticket.activities.map((activity, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          {/* Activity Icon */}
+                          <div className="mt-1">
+                            <span className={`p-1 rounded-full ${getActivityIconBg(activity.action)}`}>
+                              {getActivityIcon(activity.action)}
+                            </span>
+                          </div>
+                          
+                          {/* Activity Content */}
+                          <div className="flex-1">
+                            <div className="flex flex-wrap gap-x-2 text-sm">
+                              <span className="font-medium text-white">{activity.user}</span>
+                              <span className="text-[#8b949e]">{activity.action}</span>
+                              <span className="text-[#8b949e]">{activity.timestamp}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-[#8b949e] italic">No activity recorded yet.</div>
+                  )}
+                </div>
               </div>
-            ) : (
-              <div className="text-[#8b949e] italic">No activity recorded yet.</div>
-            )}
-          </div>
-        </div>
-      </main>
+            </main>
+      )
+      
+      }
+
 
       <Footer className="bg-[#161b22] bg-opacity-70 border-t border-[#30363d]" />
 

@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from "../../axios/axiosInstance";
+import TicketListShimmer from "../Shimmers/TicketListShimmer";
 
 const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
   const navigate = useNavigate();
   const [originalTickets, setOriginalTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
 
 
 
@@ -12,9 +15,8 @@ const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const response = await axiosInstance.get(`/tickets/list/`);
-        
-        // Initial dummy data
+        setLoading(true); 
+        const response = await axiosInstance.get(`/tickets/list/`);        
         const initialData = [];
         
         let allTickets = initialData;
@@ -23,14 +25,14 @@ const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
         }
         
         setOriginalTickets(allTickets);
-        setTickets(allTickets); // Initially, filtered tickets is same as original
+        setTickets(allTickets);
       } catch (error) {
-        // Set dummy data if API call fails
         const dummyData = [
-          // Your dummy data here
         ];
         setOriginalTickets(dummyData);
         setTickets(dummyData);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -45,15 +47,11 @@ const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
       return;
     }
   
-    // Filter the tickets based on the provided filters
     const filteredTickets = originalTickets.filter(ticket => {
-      // Check if ticket matches status filter
       const statusMatch = !filters.status || ticket.status === filters.status;
-      // Check if ticket matches priority filter
       const priorityMatch = !filters.priority || ticket.priority === filters.priority;
 
       
-      // Return true if both conditions are met
       return statusMatch && priorityMatch;
     });
   
@@ -93,45 +91,47 @@ const TicketList = ({ filters, tickets, setTickets, shouldRefresh }) => {
 
   return (
     <div className="divide-y divide-[#30363d]">
-      {tickets.length === 0 ? (
-        <div className="p-4 text-[#8b949e] text-center">
-          No tickets found matching your criteria.
-        </div>
-      ) : (
-        tickets.map((ticket) => (
-          <div key={ticket.id} className="p-4 hover:bg-[#1c2128] transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-start">
-                <div className="pt-1">
-                  {getStatusIcon(ticket.status)}
-                </div>
-                <div>
-                  <div className="flex items-center">
-                    <h3 
-                      onClick={() => navigate(`/ticket/${ticket.id}`)}
-                      className="font-medium text-white cursor-pointer hover:text-[#58a6ff]">
-                      {ticket.title}
-                    </h3>
-                    <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-opacity-20 bg-[#58a6ff] text-[#58a6ff]">
-                      {ticket.priority}
-                    </span>
-                    {ticket.type && (
-                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-opacity-20 bg-[#f78166] text-[#f78166]">
-                        {ticket.type}
+      {loading ? <TicketListShimmer /> : (
+        tickets.length === 0 ? (
+          <div className="p-4 text-[#8b949e] text-center">
+            No tickets found matching your criteria.
+          </div>
+        ) : (
+          tickets.map((ticket) => (
+            <div key={ticket.id} className="p-4 hover:bg-[#1c2128] transition-colors">
+              <div className="flex items-center justify-between">
+                <div className="flex items-start">
+                  <div className="pt-1">
+                    {getStatusIcon(ticket.status)}
+                  </div>
+                  <div>
+                    <div className="flex items-center">
+                      <h3 
+                        onClick={() => navigate(`/ticket/${ticket.id}`)}
+                        className="font-medium text-white cursor-pointer hover:text-[#58a6ff]">
+                        {ticket.title}
+                      </h3>
+                      <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-opacity-20 bg-[#58a6ff] text-[#58a6ff]">
+                        {ticket.priority}
                       </span>
-                    )}
-                  </div>
-                  <div className="text-xs text-[#8b949e] mt-1">
-                    #{ticket.id} opened by {getUserNameFromEmail(ticket.user_email)} • {ticket.user_email}
+                      {ticket.type && (
+                        <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-opacity-20 bg-[#f78166] text-[#f78166]">
+                          {ticket.type}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-[#8b949e] mt-1">
+                      #{ticket.id} opened by {getUserNameFromEmail(ticket.user_email)} • {ticket.user_email}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="text-xs text-[#8b949e]">
-                Created on {formatDate(ticket.created_at)}
+                <div className="text-xs text-[#8b949e]">
+                  Created on {formatDate(ticket.created_at)}
+                </div>
               </div>
             </div>
-          </div>
-        ))
+          ))
+        )
       )}
     </div>
   );
